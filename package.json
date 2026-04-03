@@ -1,6 +1,6 @@
 {
     "name": "app-api",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "description": "API for the Login app",
     "main": "index.ts",
     "license": "ISC",
@@ -9,12 +9,12 @@
         "start": "node src/index.ts"
     },
     "devDependencies": {
-        "@types/node": "^25.4.0",
-        "typescript": "^5.9.3"
+        "@types/node": "^25.5.2",
+        "typescript": "^6.0.2"
     },
     "dependencies": {
         "@fastify/cors": "^11.2.0",
-        "fastify": "^5.8.2"
+        "fastify": "^5.8.4"
     },
     "imports": {
         "#utils/*": "./src/utils/*",

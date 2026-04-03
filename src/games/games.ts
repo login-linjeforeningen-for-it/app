@@ -1,6 +1,6 @@
-import { categories as questionCategories } from './questions'
-import { categories as neverhaveieverCategories } from './neverhaveiever'
-import { categories as okredflagdealbreakerCategories } from './okredflagdealbreaker'
+import { categories as questionCategories } from './questions.ts'
+import { categories as neverhaveieverCategories } from './neverhaveiever.ts'
+import { categories as okredflagdealbreakerCategories } from './okredflagdealbreaker.ts'
 
 const Games = [
     {
