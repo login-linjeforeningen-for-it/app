@@ -1,0 +1,99 @@
+import config from '#constants'
+import {
+    addNotificationHistoryEntry,
+    listSubscriptions,
+    type AppNotificationHistoryEntry
+} from './store.ts'
+
+const expoTokenPattern = /^(Exponent|Expo)PushToken\[[^\]]+\]$/
+
+type SendTopicNotificationProps = {
+    title: string
+    body: string
+    topic?: string
+    data?: Record<string, string>
+}
+
+type ExpoTicket = {
+    id?: string
+    status?: 'ok' | 'error'
+    message?: string
+}
+
+export async function sendTopicNotification({
+    title,
+    body,
+    topic = 'maintenance',
+    data = {},
+}: SendTopicNotificationProps) {
+    const subscriptions = await listSubscriptions()
+    const tokens = subscriptions
+        .filter((subscription) => subscription.topics.includes(topic))
+        .map((subscription) => subscription.token)
+        .filter((token) => expoTokenPattern.test(token))
+
+    if (!tokens.length) {
+        return await addNotificationHistoryEntry({
+            title,
+            body,
+            topic,
+            data,
+            sentAt: new Date().toISOString(),
+            delivered: 0,
+            failed: 0,
+            ticketIds: [],
+        })
+    }
+
+    const tickets: ExpoTicket[] = []
+    for (const chunk of chunkArray(tokens, 100)) {
+        const response = await fetch(config.notifications.expoEndpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+            },
+            body: JSON.stringify(
+                chunk.map((token) => ({
+                    to: token,
+                    title,
+                    body,
+                    data,
+                    sound: 'default',
+                    channelId: 'default',
+                }))
+            ),
+        })
+
+        const payload = await response.json() as { data?: ExpoTicket[] }
+        tickets.push(...(payload.data || []))
+    }
+
+    return await addNotificationHistoryEntry({
+        title,
+        body,
+        topic,
+        data,
+        sentAt: new Date().toISOString(),
+        delivered: tickets.filter((ticket) => ticket.status === 'ok').length,
+        failed: tickets.filter((ticket) => ticket.status === 'error').length,
+        ticketIds: tickets.map((ticket) => ticket.id).filter((id): id is string => Boolean(id)),
+    })
+}
+
+export async function resendNotification(entry: AppNotificationHistoryEntry) {
+    return await sendTopicNotification({
+        title: entry.title,
+        body: entry.body,
+        topic: entry.topic,
+        data: entry.data,
+    })
+}
+
+function chunkArray<T>(items: T[], size: number) {
+    const chunks: T[][] = []
+    for (let index = 0; index < items.length; index += size) {
+        chunks.push(items.slice(index, index + size))
+    }
+    return chunks
+}
