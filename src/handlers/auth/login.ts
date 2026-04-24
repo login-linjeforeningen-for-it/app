@@ -8,7 +8,7 @@ type LoginQuery = {
 
 function normalizeRedirectUri(value: string | undefined) {
     const redirectUri = value || config.auth.defaultRedirectUri
-    if (redirectUri.startsWith('login://') || redirectUri.startsWith('exp://')) {
+    if (redirectUri.startsWith('login://') || redirectUri.startsWith('exp://') || redirectUri.startsWith('exp+')) {
         return redirectUri
     }
 

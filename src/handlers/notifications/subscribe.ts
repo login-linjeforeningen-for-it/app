@@ -1,5 +1,5 @@
+import { upsertSubscription } from '#db'
 import type { FastifyReply, FastifyRequest } from 'fastify'
-import { upsertSubscription } from '#utils/notifications/store.ts'
 
 type SubscribeBody = {
     token?: string

@@ -1,12 +1,13 @@
 {
     "name": "app-api",
-    "version": "1.5.0",
+    "version": "1.5.1",
     "description": "API for the Login app",
     "main": "index.ts",
     "license": "ISC",
     "type": "module",
     "scripts": {
-        "start": "bun src/index.ts"
+        "start": "bun src/index.ts",
+        "test": "bun scripts/test-notifications-e2e.mjs"
     },
     "devDependencies": {
         "@types/node": "^25.6.0",
@@ -14,11 +15,14 @@
     },
     "dependencies": {
         "@fastify/cors": "^11.2.0",
-        "fastify": "^5.8.5"
+        "@types/pg": "^8.20.0",
+        "fastify": "^5.8.5",
+        "pg": "^8.20.0"
     },
     "imports": {
         "#utils/*": "./src/utils/*",
         "#constants": "./src/constants.ts",
+        "#db": "./src/db.ts",
         "#/*": "./src/*"
     }
 }

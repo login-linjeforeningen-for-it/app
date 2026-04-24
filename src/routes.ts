@@ -12,6 +12,10 @@ import unsubscribeHandler from './handlers/notifications/unsubscribe.ts'
 import postNotificationHandler from './handlers/notifications/post.ts'
 import getNotificationsHandler from './handlers/notifications/get.ts'
 import resendNotificationHandler from './handlers/notifications/resend.ts'
+import getScheduledNotificationsHandler from './handlers/notifications/getScheduled.ts'
+import postScheduledNotificationHandler from './handlers/notifications/postScheduled.ts'
+import deleteScheduledNotificationHandler from './handlers/notifications/deleteScheduled.ts'
+import runScheduledNotificationHandler from './handlers/notifications/runScheduled.ts'
 
 /**
  * Defines the routes available in the API.
@@ -42,4 +46,8 @@ export default async function apiRoutes(fastify: FastifyInstance, _: FastifyPlug
     fastify.get('/notifications', getNotificationsHandler)
     fastify.post('/notifications', postNotificationHandler)
     fastify.post('/notifications/:id/resend', resendNotificationHandler)
+    fastify.get('/notifications/scheduled', getScheduledNotificationsHandler)
+    fastify.post('/notifications/scheduled', postScheduledNotificationHandler)
+    fastify.delete('/notifications/scheduled/:id', deleteScheduledNotificationHandler)
+    fastify.post('/notifications/scheduled/:id/send', runScheduledNotificationHandler)
 }

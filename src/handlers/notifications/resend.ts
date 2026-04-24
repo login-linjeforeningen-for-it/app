@@ -1,7 +1,7 @@
 import type { FastifyReply, FastifyRequest } from 'fastify'
 import { requireNotificationAdmin } from '#utils/notifications/auth.ts'
-import { getNotificationHistoryEntry } from '#utils/notifications/store.ts'
 import { resendNotification } from '#utils/notifications/send.ts'
+import { getNotificationHistoryEntry } from '#db'
 
 export default async function resendNotificationHandler(req: FastifyRequest, res: FastifyReply) {
     if (!requireNotificationAdmin(req, res)) {

@@ -23,7 +23,9 @@ function parseState(state: string | undefined) {
         }
 
         return {
-            redirectUri: parsed.redirectUri?.startsWith('login://') || parsed.redirectUri?.startsWith('exp://')
+            redirectUri: parsed.redirectUri?.startsWith('login://')
+                || parsed.redirectUri?.startsWith('exp://')
+                || parsed.redirectUri?.startsWith('exp+')
                 ? parsed.redirectUri
                 : config.auth.defaultRedirectUri,
             target: parsed.target || 'app'

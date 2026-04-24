@@ -1,5 +1,5 @@
+import { removeSubscription } from '#db'
 import type { FastifyReply, FastifyRequest } from 'fastify'
-import { removeSubscription } from '#utils/notifications/store.ts'
 
 type UnsubscribeBody = {
     token?: string

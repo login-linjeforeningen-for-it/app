@@ -1,9 +1,5 @@
 import config from '#constants'
-import {
-    addNotificationHistoryEntry,
-    listSubscriptions,
-    type AppNotificationHistoryEntry
-} from './store.ts'
+import { addNotificationHistoryEntry, listSubscriptions } from '#db'
 
 const expoTokenPattern = /^(Exponent|Expo)PushToken\[[^\]]+\]$/
 
@@ -47,26 +43,33 @@ export async function sendTopicNotification({
 
     const tickets: ExpoTicket[] = []
     for (const chunk of chunkArray(tokens, 100)) {
-        const response = await fetch(config.notifications.expoEndpoint, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Accept: 'application/json',
-            },
-            body: JSON.stringify(
-                chunk.map((token) => ({
-                    to: token,
-                    title,
-                    body,
-                    data,
-                    sound: 'default',
-                    channelId: 'default',
-                }))
-            ),
-        })
+        try {
+            const response = await fetch(config.notifications.expoEndpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                },
+                body: JSON.stringify(
+                    chunk.map((token) => ({
+                        to: token,
+                        title,
+                        body,
+                        data,
+                        sound: 'default',
+                        channelId: 'default',
+                    }))
+                ),
+            })
 
-        const payload = await response.json() as { data?: ExpoTicket[] }
-        tickets.push(...(payload.data || []))
+            const payload = await response.json() as { data?: ExpoTicket[] }
+            tickets.push(...(payload.data || []))
+        } catch (error) {
+            tickets.push(...chunk.map(() => ({
+                status: 'error' as const,
+                message: error instanceof Error ? error.message : 'Push send failed',
+            })))
+        }
     }
 
     return await addNotificationHistoryEntry({

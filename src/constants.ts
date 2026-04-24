@@ -1,9 +1,13 @@
 const config = {
     minVersion: '2.4.0',
+    database: {
+        url: process.env.APP_API_DATABASE_URL || process.env.DATABASE_URL || '',
+    },
     notifications: {
         adminToken: process.env.APP_API_ADMIN_TOKEN || '',
         storageDir: process.env.APP_API_DATA_DIR || './data/notifications',
         expoEndpoint: process.env.EXPO_PUSH_ENDPOINT || 'https://exp.host/--/api/v2/push/send',
+        schedulerIntervalMs: Number(process.env.APP_API_SCHEDULER_INTERVAL_MS || 15000),
     },
     auth: {
         baseUrl: process.env.AUTHENTIK_URL || 'https://authentik.login.no',
