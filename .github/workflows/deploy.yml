@@ -44,3 +44,8 @@ jobs:
           printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/app-api-deploy
           chmod 600 ~/.ssh/app-api-deploy
           ssh -i ~/.ssh/app-api-deploy -o StrictHostKeyChecking=no "$DEPLOY_USER@$DEPLOY_HOST" "cd '$DEPLOY_PATH' && git pull --ff-only && docker compose up -d --build"
+
+      - name: Report skipped deploy
+        if: ${{ env.DEPLOY_HOST == '' || env.DEPLOY_USER == '' || env.DEPLOY_KEY == '' || env.DEPLOY_PATH == '' }}
+        run: |
+          echo "::warning::App API deploy skipped because one or more APP_API_DEPLOY_* secrets are missing."
