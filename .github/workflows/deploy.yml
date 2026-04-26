@@ -34,6 +34,9 @@ jobs:
       - name: Typecheck
         run: bunx tsc --noEmit
 
+      - name: Run E2E tests
+        run: bun run test
+
       - name: Deploy with SSH
         if: ${{ env.DEPLOY_HOST != '' && env.DEPLOY_USER != '' && env.DEPLOY_KEY != '' && env.DEPLOY_PATH != '' }}
         run: |
