@@ -1,18 +1,10 @@
 import type { FastifyReply, FastifyRequest } from 'fastify'
 import config from '#constants'
+import { normalizeAppRedirectUri } from '#utils/auth/redirect.ts'
 
 type LoginQuery = {
     redirect_uri?: string
     target?: string
-}
-
-function normalizeRedirectUri(value: string | undefined) {
-    const redirectUri = value || config.auth.defaultRedirectUri
-    if (redirectUri.startsWith('login://') || redirectUri.startsWith('exp://') || redirectUri.startsWith('exp+')) {
-        return redirectUri
-    }
-
-    return config.auth.defaultRedirectUri
 }
 
 export default async function authLogin(req: FastifyRequest<{ Querystring: LoginQuery }>, res: FastifyReply) {
@@ -21,7 +13,7 @@ export default async function authLogin(req: FastifyRequest<{ Querystring: Login
         return res.status(500).send({ error: 'Authentication is not configured' })
     }
 
-    const redirectUri = normalizeRedirectUri(req.query.redirect_uri)
+    const redirectUri = normalizeAppRedirectUri(req.query.redirect_uri)
     const target = req.query.target || 'app'
     const state = Buffer.from(JSON.stringify({ redirectUri, target })).toString('base64url')
 

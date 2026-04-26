@@ -1,5 +1,6 @@
 import type { FastifyReply, FastifyRequest } from 'fastify'
 import config from '#constants'
+import { normalizeAppRedirectUri } from '#utils/auth/redirect.ts'
 
 type UserInfo = {
     sub: string
@@ -23,11 +24,7 @@ function parseState(state: string | undefined) {
         }
 
         return {
-            redirectUri: parsed.redirectUri?.startsWith('login://')
-                || parsed.redirectUri?.startsWith('exp://')
-                || parsed.redirectUri?.startsWith('exp+')
-                ? parsed.redirectUri
-                : config.auth.defaultRedirectUri,
+            redirectUri: normalizeAppRedirectUri(parsed.redirectUri),
             target: parsed.target || 'app'
         }
     } catch {
