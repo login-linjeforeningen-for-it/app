@@ -7,6 +7,7 @@ import NeverHaveIEverHandler from './handlers/neverhaveiever/neverhaveiever.ts'
 import VersionHandler from './handlers/version/version.ts'
 import AuthLoginHandler from './handlers/auth/login.ts'
 import AuthCallbackHandler from './handlers/auth/callback.ts'
+import AuthMeHandler from './handlers/auth/me.ts'
 import subscribeHandler from './handlers/notifications/subscribe.ts'
 import unsubscribeHandler from './handlers/notifications/unsubscribe.ts'
 import postNotificationHandler from './handlers/notifications/post.ts'
@@ -39,6 +40,7 @@ export default async function apiRoutes(fastify: FastifyInstance, _: FastifyPlug
     // Auth handlers
     fastify.get('/auth/login', AuthLoginHandler)
     fastify.get('/auth/callback', AuthCallbackHandler)
+    fastify.get('/auth/me', AuthMeHandler)
 
     // Notification handlers
     fastify.post('/subscribe', subscribeHandler)
