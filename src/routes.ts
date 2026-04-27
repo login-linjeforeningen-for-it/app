@@ -1,9 +1,11 @@
 import type { FastifyInstance, FastifyPluginOptions } from 'fastify'
 import IndexHandler from './handlers/index/index.ts'
-import GamesHandler from './handlers/games/gamesHandler.ts'
-import QuestionsHandler from './handlers/questions/questionsHandler.ts'
-import OkRedFlagDealBreakerHandler from './handlers/okredflagdealbreaker/okreadflagdealbreaker.ts'
-import NeverHaveIEverHandler from './handlers/neverhaveiever/neverhaveiever.ts'
+import {
+    getGames,
+    getNeverHaveIEver,
+    getOkRedFlagDealBreaker,
+    getQuestions,
+} from './handlers/games.ts'
 import VersionHandler from './handlers/version/version.ts'
 import AuthLoginHandler from './handlers/auth/login.ts'
 import AuthCallbackHandler from './handlers/auth/callback.ts'
@@ -34,10 +36,10 @@ export default async function apiRoutes(fastify: FastifyInstance, _: FastifyPlug
     fastify.get('/', IndexHandler)
 
     // Game handlers
-    fastify.get('/games', GamesHandler)
-    fastify.get('/questions', QuestionsHandler)
-    fastify.get('/okredflagdealbreaker', OkRedFlagDealBreakerHandler)
-    fastify.get('/neverhaveiever', NeverHaveIEverHandler)
+    fastify.get('/games', getGames)
+    fastify.get('/questions', getQuestions)
+    fastify.get('/okredflagdealbreaker', getOkRedFlagDealBreaker)
+    fastify.get('/neverhaveiever', getNeverHaveIEver)
 
     // Version handler
     fastify.get('/version',VersionHandler)
