@@ -1,4 +1,4 @@
-name: Deploy App API
+name: Deploy App
 
 on:
   push:
@@ -7,12 +7,12 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: app-api-deploy
+  group: app-deploy
   cancel-in-progress: false
 
 jobs:
   deploy:
-    name: Push app-api to server
+    name: Push app to server
     runs-on: ubuntu-latest
     env:
       DEPLOY_HOST: ${{ secrets.APP_API_DEPLOY_HOST }}
@@ -41,11 +41,11 @@ jobs:
         if: ${{ env.DEPLOY_HOST != '' && env.DEPLOY_USER != '' && env.DEPLOY_KEY != '' && env.DEPLOY_PATH != '' }}
         run: |
           mkdir -p ~/.ssh
-          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/app-api-deploy
-          chmod 600 ~/.ssh/app-api-deploy
-          ssh -i ~/.ssh/app-api-deploy -o StrictHostKeyChecking=no "$DEPLOY_USER@$DEPLOY_HOST" "cd '$DEPLOY_PATH' && git pull --ff-only && docker compose up -d --build"
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/app-deploy
+          chmod 600 ~/.ssh/app-deploy
+          ssh -i ~/.ssh/app-deploy -o StrictHostKeyChecking=no "$DEPLOY_USER@$DEPLOY_HOST" "cd '$DEPLOY_PATH' && git pull --ff-only && docker compose up -d --build"
 
       - name: Report skipped deploy
         if: ${{ env.DEPLOY_HOST == '' || env.DEPLOY_USER == '' || env.DEPLOY_KEY == '' || env.DEPLOY_PATH == '' }}
         run: |
-          echo "::warning::App API deploy skipped because one or more APP_API_DEPLOY_* secrets are missing."
+          echo "::warning::App deploy skipped because one or more APP_API_DEPLOY_* secrets are missing."
