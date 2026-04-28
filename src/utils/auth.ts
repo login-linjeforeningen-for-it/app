@@ -28,7 +28,7 @@ type AuthentikCoreUser = {
     attributes?: Record<string, unknown>
 }
 
-type AuthentikCoreUsersResponse = {
+type CoreUsers = {
     results?: AuthentikCoreUser[]
 }
 
@@ -102,7 +102,7 @@ export async function fetchCoreUser(userInfo: AuthentikUserInfo) {
         throw new Error('Unable to fetch Authentik user details')
     }
 
-    const data = await response.json() as AuthentikCoreUsersResponse
+    const data = await response.json() as CoreUsers
     return data.results?.[0] || null
 }
 

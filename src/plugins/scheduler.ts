@@ -6,19 +6,19 @@ import {
     markFailed,
     markSent,
 } from '#utils/notifications/schedules.ts'
-import { hasDatabase, initializeDatabase } from '#db'
+import { hasDb, initDb } from '#db'
 
 let intervalHandle: ReturnType<typeof setInterval> | null = null
 let running = false
 
-async function flushDueNotifications(fastify: FastifyInstance) {
-    if (running || !hasDatabase()) {
+async function flushDue(fastify: FastifyInstance) {
+    if (running || !hasDb()) {
         return
     }
 
     running = true
     try {
-        await initializeDatabase()
+        await initDb()
         const items = await claimDueSchedules(10)
         for (const item of items) {
             try {
@@ -39,18 +39,18 @@ async function flushDueNotifications(fastify: FastifyInstance) {
     }
 }
 
-export default async function notificationScheduler(fastify: FastifyInstance, _: FastifyPluginOptions) {
-    if (!hasDatabase()) {
+export default async function scheduler(fastify: FastifyInstance, _: FastifyPluginOptions) {
+    if (!hasDb()) {
         fastify.log.info('Notification scheduler disabled: APP_API_DATABASE_URL is not configured')
         return
     }
 
-    void flushDueNotifications(fastify).catch((error) => {
+    void flushDue(fastify).catch((error) => {
         fastify.log.error(error)
     })
 
     intervalHandle = setInterval(() => {
-        void flushDueNotifications(fastify).catch((error) => {
+        void flushDue(fastify).catch((error) => {
             fastify.log.error(error)
         })
     }, config.notifications.schedulerIntervalMs)

@@ -22,7 +22,7 @@ export async function login(req: FastifyRequest<{ Querystring: LoginQuery }>, re
         return res.status(500).send({ error: 'Authentication is not configured' })
     }
 
-    const redirectUri = normalizeAppRedirectUri(req.query.redirect_uri)
+    const redirectUri = appRedirect(req.query.redirect_uri)
     const target = req.query.target || 'app'
     const state = Buffer.from(JSON.stringify({ redirectUri, target })).toString('base64url')
 
@@ -138,7 +138,7 @@ function parseState(state: string | undefined) {
         }
 
         return {
-            redirectUri: normalizeAppRedirectUri(parsed.redirectUri),
+            redirectUri: appRedirect(parsed.redirectUri),
             target: parsed.target || 'app'
         }
     } catch {
@@ -149,7 +149,7 @@ function parseState(state: string | undefined) {
     }
 }
 
-function normalizeAppRedirectUri(value: string | undefined) {
+function appRedirect(value: string | undefined) {
     const redirectUri = value || config.auth.defaultRedirectUri
     const defaultRedirectUri = expoScheme(config.auth.defaultRedirectUri)
     const nativeRedirectUri = expoScheme(redirectUri)

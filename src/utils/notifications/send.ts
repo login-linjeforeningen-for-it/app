@@ -84,7 +84,7 @@ export async function sendTopic({
     })
 }
 
-export async function resendEntry(entry: AppNotificationHistoryEntry) {
+export async function resendEntry(entry: HistoryEntry) {
     return await sendTopic({
         title: entry.title,
         body: entry.body,

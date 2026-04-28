@@ -26,14 +26,14 @@ type Game = {
     description_en: string
 }
 
-type AppNotificationSubscription = {
+type Subscription = {
     token: string
     topics: string[]
     createdAt: string
     updatedAt: string
 }
 
-type AppNotificationHistoryEntry = {
+type HistoryEntry = {
     id: string
     title: string
     body: string
@@ -45,16 +45,16 @@ type AppNotificationHistoryEntry = {
     ticketIds: string[]
 }
 
-type ScheduledNotificationStatus = 'scheduled' | 'processing' | 'sent' | 'failed' | 'cancelled'
+type ScheduleStatus = 'scheduled' | 'processing' | 'sent' | 'failed' | 'cancelled'
 
-type ScheduledNotificationRecord = {
+type ScheduleRecord = {
     id: string
     title: string
     body: string
     topic: string
     data: Record<string, string>
     scheduledAt: string
-    status: ScheduledNotificationStatus
+    status: ScheduleStatus
     createdAt: string
     updatedAt: string
     sentAt: string | null

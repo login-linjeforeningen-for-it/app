@@ -1,7 +1,7 @@
 import config from '#constants'
 import {
     getHistoryEntry,
-    listNotificationHistory,
+    listHistory,
     removeSubscription,
     upsertSubscription,
 } from '#db'
@@ -48,7 +48,7 @@ export async function unsubscribe(req: FastifyRequest, res: FastifyReply) {
 export const history = adminOnly(async (req, res) => {
     const { limit } = (req.query || {}) as { limit?: string }
     const parsedLimit = Math.min(Math.max(Number(limit) || 25, 1), 100)
-    return res.send(await listNotificationHistory(parsedLimit))
+    return res.send(await listHistory(parsedLimit))
 })
 
 export const send = adminOnly(async (req, res) => {

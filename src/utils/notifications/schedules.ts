@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto'
-import { getPool, initializeDatabase, requirePool } from '#db'
+import { getPool, initDb, requirePool } from '#db'
 
 type ScheduleInput = {
     title: string
@@ -12,7 +12,7 @@ type ScheduleInput = {
 
 export async function createSchedule(input: ScheduleInput) {
     const db = requirePool()
-    await initializeDatabase()
+    await initDb()
     const id = randomUUID()
     const result = await db.query(
         `INSERT INTO app_notification_schedules (
@@ -35,7 +35,7 @@ export async function createSchedule(input: ScheduleInput) {
 
 export async function cancelSchedule(id: string) {
     const db = requirePool()
-    await initializeDatabase()
+    await initDb()
     const result = await db.query(
         `UPDATE app_notification_schedules
          SET status = 'cancelled',
@@ -52,14 +52,14 @@ export async function cancelSchedule(id: string) {
 
 export async function getSchedule(id: string) {
     const db = requirePool()
-    await initializeDatabase()
+    await initDb()
     const result = await db.query(`SELECT * FROM app_notification_schedules WHERE id = $1`, [id])
     return result.rows[0] ? map(result.rows[0]) : null
 }
 
 export async function listSchedules(limit = 50) {
     const db = requirePool()
-    await initializeDatabase()
+    await initDb()
     const result = await db.query(
         `SELECT *
          FROM app_notification_schedules
@@ -77,7 +77,7 @@ export async function claimDueSchedules(limit = 5) {
         return []
     }
 
-    await initializeDatabase()
+    await initDb()
     const client = await db.connect()
 
     try {
@@ -110,7 +110,7 @@ export async function claimDueSchedules(limit = 5) {
     }
 }
 
-export async function markSent(id: string, history: AppNotificationHistoryEntry) {
+export async function markSent(id: string, history: HistoryEntry) {
     const db = requirePool()
     const result = await db.query(
         `UPDATE app_notification_schedules
@@ -144,7 +144,7 @@ export async function markFailed(id: string, error: unknown) {
     return result.rows[0] ? map(result.rows[0]) : null
 }
 
-function map(row: Record<string, unknown>): ScheduledNotificationRecord {
+function map(row: Record<string, unknown>): ScheduleRecord {
     return {
         id: String(row.id),
         title: String(row.title),
@@ -152,7 +152,7 @@ function map(row: Record<string, unknown>): ScheduledNotificationRecord {
         topic: String(row.topic),
         data: (row.data || {}) as Record<string, string>,
         scheduledAt: new Date(String(row.scheduled_at)).toISOString(),
-        status: String(row.status) as ScheduledNotificationRecord['status'],
+        status: String(row.status) as ScheduleRecord['status'],
         createdAt: new Date(String(row.created_at)).toISOString(),
         updatedAt: new Date(String(row.updated_at)).toISOString(),
         sentAt: row.sent_at ? new Date(String(row.sent_at)).toISOString() : null,

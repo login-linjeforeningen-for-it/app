@@ -4,9 +4,9 @@ import config from '#constants'
 
 let pool: Pool | null = null
 let initialized = false
-let initializationPromise: Promise<void> | null = null
+let initializing: Promise<void> | null = null
 
-function mapSubscription(row: Record<string, unknown>): AppNotificationSubscription {
+function mapSubscription(row: Record<string, unknown>): Subscription {
     return {
         token: String(row.token),
         topics: Array.isArray(row.topics) ? row.topics.map((item) => String(item)) : [],
@@ -15,7 +15,7 @@ function mapSubscription(row: Record<string, unknown>): AppNotificationSubscript
     }
 }
 
-function mapHistoryEntry(row: Record<string, unknown>): AppNotificationHistoryEntry {
+function mapHistoryEntry(row: Record<string, unknown>): HistoryEntry {
     return {
         id: String(row.id),
         title: String(row.title),
@@ -29,7 +29,7 @@ function mapHistoryEntry(row: Record<string, unknown>): AppNotificationHistoryEn
     }
 }
 
-export function hasDatabase() {
+export function hasDb() {
     return Boolean(config.database.url)
 }
 
@@ -56,26 +56,26 @@ export function requirePool() {
     return db
 }
 
-export async function initializeDatabase() {
+export async function initDb() {
     if (initialized || !config.database.url) {
         return
     }
 
-    if (initializationPromise) {
-        await initializationPromise
+    if (initializing) {
+        await initializing
         return
     }
 
-    initializationPromise = initializeDatabaseSchema()
+    initializing = initSchema()
     try {
-        await initializationPromise
+        await initializing
         initialized = true
     } finally {
-        initializationPromise = null
+        initializing = null
     }
 }
 
-async function initializeDatabaseSchema() {
+async function initSchema() {
     const db = getPool()
     if (!db) {
         return
@@ -139,7 +139,7 @@ async function initializeDatabaseSchema() {
 
 export async function listSubscriptions() {
     const db = requirePool()
-    await initializeDatabase()
+    await initDb()
     const result = await db.query(
         `SELECT token, topics, created_at, updated_at
          FROM app_notification_subscriptions
@@ -151,7 +151,7 @@ export async function listSubscriptions() {
 
 export async function upsertSubscription(token: string, topic: string) {
     const db = requirePool()
-    await initializeDatabase()
+    await initDb()
     const existing = await db.query(
         `SELECT token, topics, created_at, updated_at
          FROM app_notification_subscriptions
@@ -181,7 +181,7 @@ export async function upsertSubscription(token: string, topic: string) {
 
 export async function removeSubscription(token: string, topic: string) {
     const db = requirePool()
-    await initializeDatabase()
+    await initDb()
     const existing = await db.query(
         `SELECT token, topics, created_at, updated_at
          FROM app_notification_subscriptions
@@ -210,9 +210,9 @@ export async function removeSubscription(token: string, topic: string) {
     )
 }
 
-export async function listNotificationHistory(limit = 25) {
+export async function listHistory(limit = 25) {
     const db = requirePool()
-    await initializeDatabase()
+    await initDb()
     const result = await db.query(
         `SELECT *
          FROM app_notification_history
@@ -226,14 +226,14 @@ export async function listNotificationHistory(limit = 25) {
 
 export async function getHistoryEntry(id: string) {
     const db = requirePool()
-    await initializeDatabase()
+    await initDb()
     const result = await db.query(`SELECT * FROM app_notification_history WHERE id = $1`, [id])
     return result.rows[0] ? mapHistoryEntry(result.rows[0]) : null
 }
 
-export async function addHistoryEntry(entry: Omit<AppNotificationHistoryEntry, 'id'>) {
+export async function addHistoryEntry(entry: Omit<HistoryEntry, 'id'>) {
     const db = requirePool()
-    await initializeDatabase()
+    await initDb()
     const id = randomUUID()
     const result = await db.query(
         `INSERT INTO app_notification_history (
