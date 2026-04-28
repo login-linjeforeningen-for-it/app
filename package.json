@@ -1,6 +1,6 @@
 {
     "name": "app",
-    "version": "1.5.7",
+    "version": "1.5.8",
     "description": "API for the Login app",
     "main": "index.ts",
     "license": "ISC",

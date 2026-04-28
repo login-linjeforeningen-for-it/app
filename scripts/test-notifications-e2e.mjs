@@ -1,6 +1,5 @@
-import { spawn } from 'child_process'
 import http from 'http'
-import net from 'net'
+import { fetchJson, run, startApi, waitFor, waitForPort } from './e2e.mjs'
 
 const apiPort = 18088
 const expoPort = 19090
@@ -37,7 +36,7 @@ const apiProcess = {
 async function main() {
     await startExpoServer()
     try {
-        await runCommand('docker', [
+        await run('docker', [
             'run',
             '-d',
             '--rm',
@@ -57,13 +56,21 @@ async function main() {
         await waitForPort(postgresPort)
         await waitFor(async () => {
             try {
-                await runCommand('docker', ['exec', containerName, 'pg_isready', '-U', 'app', '-d', 'app'])
+                await run('docker', ['exec', containerName, 'pg_isready', '-U', 'app', '-d', 'app'])
                 return true
             } catch {
                 return false
             }
         }, 20000)
-        await startApi()
+        apiProcess.child = startApi({
+            port: apiPort,
+            env: {
+                APP_API_ADMIN_TOKEN: adminToken,
+                APP_API_DATABASE_URL: `postgresql://app:app@127.0.0.1:${postgresPort}/app`,
+                EXPO_PUSH_ENDPOINT: `http://127.0.0.1:${expoPort}/push/send`,
+                APP_API_SCHEDULER_INTERVAL_MS: '1000',
+            },
+        })
         await waitForPort(apiPort)
 
         await fetchJson(`http://127.0.0.1:${apiPort}/api/subscribe`, {
@@ -134,7 +141,7 @@ async function main() {
             apiProcess.child.kill('SIGTERM')
         }
         await new Promise((resolve) => expoServer.close(resolve))
-        await runCommand('docker', ['rm', '-f', containerName], { allowFailure: true })
+        await run('docker', ['rm', '-f', containerName], { allowFailure: true })
     }
 }
 
@@ -142,70 +149,6 @@ function startExpoServer() {
     return new Promise((resolve, reject) => {
         expoServer.once('error', reject)
         expoServer.listen(expoPort, '127.0.0.1', () => resolve(undefined))
-    })
-}
-
-async function startApi() {
-    apiProcess.child = spawn('bun', ['src/index.ts'], {
-        cwd: process.cwd(),
-        env: {
-            ...process.env,
-            PORT: String(apiPort),
-            APP_API_ADMIN_TOKEN: adminToken,
-            APP_API_DATABASE_URL: `postgresql://app:app@127.0.0.1:${postgresPort}/app`,
-            EXPO_PUSH_ENDPOINT: `http://127.0.0.1:${expoPort}/push/send`,
-            APP_API_SCHEDULER_INTERVAL_MS: '1000',
-        },
-        stdio: 'inherit',
-    })
-}
-
-async function fetchJson(url, options = {}) {
-    const response = await fetch(url, options)
-    const payload = await response.json().catch(() => null)
-    if (!response.ok) {
-        throw new Error(`${response.status} ${response.statusText}: ${JSON.stringify(payload)}`)
-    }
-    return payload
-}
-
-function waitForPort(port) {
-    return waitFor(async () => {
-        return await new Promise((resolve) => {
-            const socket = net.connect(port, '127.0.0.1')
-            socket.once('connect', () => {
-                socket.destroy()
-                resolve(true)
-            })
-            socket.once('error', () => {
-                socket.destroy()
-                resolve(false)
-            })
-        })
-    }, 20000)
-}
-
-async function waitFor(check, timeoutMs) {
-    const startedAt = Date.now()
-    while (Date.now() - startedAt < timeoutMs) {
-        if (await check()) {
-            return
-        }
-        await new Promise((resolve) => setTimeout(resolve, 250))
-    }
-    throw new Error('Timed out waiting for condition')
-}
-
-function runCommand(command, args, { allowFailure = false } = {}) {
-    return new Promise((resolve, reject) => {
-        const child = spawn(command, args, { stdio: 'inherit' })
-        child.once('exit', (code) => {
-            if (code === 0 || allowFailure) {
-                resolve(undefined)
-                return
-            }
-            reject(new Error(`${command} ${args.join(' ')} exited with code ${code}`))
-        })
     })
 }
 
